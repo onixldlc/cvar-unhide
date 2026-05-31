@@ -21,7 +21,10 @@ jobs:
         # NOTE: Do not bump these blindly. Source Engine plugins need an old
         # toolchain (VS 2019 on Windows, older glibc on Linux) for ABI compat
         # with the game binaries.
-        os: [windows-2019, ubuntu-22.04]
+        # windows-latest (2022) still ships the v142 (VS2019) toolset that the
+        # .vcxproj targets, so ABI compat is preserved while getting better
+        # runner pool availability than the legacy windows-2019 label.
+        os: [windows-latest, ubuntu-22.04]
         game: [csgo, portal2]
         exclude:
           # Upstream hl2sdk has no Linux libs for Portal 2
@@ -61,11 +64,11 @@ jobs:
 
       # ---- Windows build ----
       - name: Set up MSBuild
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         uses: microsoft/setup-msbuild@v2
 
       - name: Build plugin (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         run: msbuild /m /p:Configuration=Release cvar-unhide.sln
 
       # ---- Linux build ----
