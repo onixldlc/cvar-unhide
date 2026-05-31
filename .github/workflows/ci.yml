@@ -57,6 +57,18 @@ jobs:
       if: ${{ matrix.os == 'windows-2019' }}
       run: msbuild /m /p:Configuration=Release cvar-unhide.sln
 
+    - name: Fetch libgcc_s.so.1 from Ubuntu archive
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      run: |
+        # apt-get download uses the distro's GPG-verified package index for provenance.
+        # sha256sum is printed for auditability in the build log.
+        sudo apt-get update -q
+        apt-get download lib32gcc-s1
+        dpkg-deb -x lib32gcc-s1*.deb ./_libgcc
+        cp ./_libgcc/usr/lib32/libgcc_s.so.1 ./libgcc_s.so.1
+        sha256sum ./libgcc_s.so.1
+        rm -rf ./_libgcc lib32gcc-s1*.deb
+
     - name: Build plugin (Linux)
       if: ${{ matrix.os == 'ubuntu-22.04' }}
       uses: docker://saulren/serverplugin-base:latest

@@ -4,4 +4,5 @@ Debug
 Release
 *.dll
 *.so
+*.so.1
 plugin_map.txt
