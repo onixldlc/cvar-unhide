@@ -24,7 +24,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Checkout hl2sdk
       run: |
@@ -32,33 +32,26 @@ jobs:
         git submodule sync
         git submodule update --init --remote
 
-    - name: Get current time
-      uses: 1466587594/get-current-time@v2
-      id: current-time
-      with:
-        format: YYYYMMDD
-
-    - id: version
-      run: echo "::set-output name=version::${{ steps.current-time.outputs.formattedTime }}.${{ github.run_number }}"
+    - name: Get version
+      id: version
+      shell: bash
+      run: echo "version=$(date +%Y%m%d).${{ github.run_number }}" >> $GITHUB_OUTPUT
 
     - name: Format game name
-      uses: ASzc/change-string-case-action@v1
+      uses: ASzc/change-string-case-action@v8
       id: game-name
       with:
         string: ${{ matrix.game }}
 
     - name: Write version.h
-      uses: DamianReeves/write-file-action@v1.0
-      with:
-        path: version.h
-        contents: |
-          #define CVAR_UNHIDE_VERSION "${{ steps.version.outputs.version }}-${{ matrix.game }}"
-          #define CVAR_UNHIDE_GAME_${{ steps.game-name.outputs.uppercase }}
-        write-mode: overwrite
+      shell: bash
+      run: |
+        echo '#define CVAR_UNHIDE_VERSION "${{ steps.version.outputs.version }}-${{ matrix.game }}"' > version.h
+        echo '#define CVAR_UNHIDE_GAME_${{ steps.game-name.outputs.uppercase }}' >> version.h
 
     - name: Add MSBuild to PATH
       if: ${{ matrix.os == 'windows-2019' }}
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Build plugin (Windows)
       if: ${{ matrix.os == 'windows-2019' }}
@@ -71,7 +64,7 @@ jobs:
         args: make plugin
 
     - name: Archive binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: addons-${{ matrix.game }}-${{ matrix.os }}
         path: addons
@@ -84,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -94,7 +87,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "TAG=v$VERSION" >> $GITHUB_ENV
 
-      - uses: mukunku/tag-exists-action@v1.0.0
+      - uses: mukunku/tag-exists-action@v1.7.0
         id: checkTag
         with:
           tag: ${{ env.TAG }}
@@ -111,7 +104,7 @@ jobs:
 
       - name: Download artifacts
         if: ${{ steps.checkTag.outputs.exists == 'false' }}
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
