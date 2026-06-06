@@ -1,1 +1,2 @@
 #define CVAR_UNHIDE_VERSION "v1.0"
+#define CVAR_UNHIDE_GAME_CSGO
